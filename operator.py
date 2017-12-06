@@ -1,7 +1,9 @@
+# -*- coding: utf-8 -*-
+from __future__ import division
+from __future__ import print_function
 import numpy as np
 import math
 import cmath
-import sys
 try:
     import cupy
 except:
@@ -9,7 +11,7 @@ except:
 
 
 def hadamard():
-    return np.array([[1, 1], [1, -1]]) / cmath.sqrt(2)
+    return np.array([[1, 1], [1, -1]]) / math.sqrt(2)
 
 
 def pauli_x():
@@ -24,7 +26,7 @@ def pauli_z():
     return np.array([[1, 0], [0, -1]])
 
 
-def rx():
+def rx(phi):
     return np.array([[0, 1], [1, 0]])  # todo
 
 
@@ -100,3 +102,7 @@ def ising(phi):
     operator[1, 0, 1, 0] = -1j * cmath.exp(-1j * phi)
     operator /= cmath.sqrt(2)
     return operator
+
+
+if __name__ == '__main__':
+    print(swap())
