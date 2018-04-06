@@ -76,8 +76,13 @@ class Qubits:
         xp = self.xp
 
         data = xp.split(self.data, [1], axis=target)
-        p = [xp.sum(xp.square(data[i])).real for i in (0,1)]
-        obs = xp.random.choice([0, 1], p=p)
+        if xp == np:
+            p = [xp.sum(data[i] ** 2).real for i in (0, 1)]  # xp.square has bug when it get complex128's array
+            obs = xp.random.choice([0, 1], p=p)
+        else:
+            p = [np.asscalar(cupy.asnumpy(xp.sum(data[i] ** 2).real)) for i in (0, 1)]  # difference between numpy and cupy
+            obs = np.asscalar(cupy.asnumpy(xp.random.choice([0, 1], size=1, p=p)))
+
         q_index = [1] * self.size
         q_index[target] = 2
         self.data = xp.tile(data[obs] / p[obs], q_index)
