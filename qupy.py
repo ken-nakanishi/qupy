@@ -35,7 +35,7 @@ class Qubits:
         :param (numpy.array or cupy.ndarray) operator: unitary operator
         :param (None or int or tuple of int) target: operated qubits
         :param (None or int or tuple of int) control: operate target qubits where all control qubits are 1
-        :param (None or int or tuple of int) control_sub: operate target qubits where all control qubits are 1
+        :param (None or int or tuple of int) control_sub: operate target qubits where all control qubits are 0
         '''
         xp = self.xp
 
