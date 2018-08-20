@@ -30,11 +30,12 @@ class Qubits:
         self.data = xp.zeros([2] * self.size, dtype=dtype)
         self.data[tuple([0] * self.size)] = 1
 
-    def gate(self, operator, target, control=None):
+    def gate(self, operator, target, control=None, control_sub=None):
         '''
         :param (numpy.array or cupy.ndarray) operator: unitary operator
         :param (None or int or tuple of int) target: operated qubits
         :param (None or int or tuple of int) control: operate target qubits where all control qubits are 1
+        :param (None or int or tuple of int) control_sub: operate target qubits where all control qubits are 1
         '''
         xp = self.xp
 
@@ -54,6 +55,9 @@ class Qubits:
         if control is not None:
             for _c in control:
                 c_slice[_c] = slice(1, 2)
+        if control_sub is not None:
+            for _c in control:
+                c_slice[_c] = slice(0, 1)
 
         c_index = list(range(self.size))
         t_index = list(range(self.size))
@@ -63,14 +67,36 @@ class Qubits:
 
         # use following code when numpy bug is removed
         # self.data[c_slice] = xp.einsum(operator, o_index, self.data[c_slice], c_index, t_index)
+        '''
+        >>> np.einsum(
+            np.array([[[[[[[[[[[[[[[[1]]]]]]]]]]]]]]]]),
+            [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15],
+            np.array([[[[[[[[[[[[[[[[1]]]]]]]]]]]]]]]]),
+            [10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25],
+            [0,1,2,3,4,5,6,7,8,9,10,14,15,16,17,18,19,20,21,22,23,24,25]
+        )
+        array([[[[[[[[[[[[[[[[[[[[[[[1]]]]]]]]]]]]]]]]]]]]]]])
+        
+        >>> np.einsum(
+            np.array([[[[[[[[[[[[[[[[[1]]]]]]]]]]]]]]]]]),
+            [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],
+            np.array([[[[[[[[[[[[[[[[[1]]]]]]]]]]]]]]]]]),
+            [10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26],
+            [0,1,2,3,4,5,6,7,8,9,10,14,15,16,17,18,19,20,21,22,23,24,25,26]
+        )
+        ValueError: invalid subscript '{' in einstein sum subscripts string, subscripts must be letters
+        '''
 
         # alternative code
-        character = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
-        o_index = ''.join([character[i] for i in o_index])
-        c_index = ''.join([character[i] for i in c_index])
-        t_index = ''.join([character[i] for i in t_index])
-        subscripts = '{},{}->{}'.format(o_index, c_index, t_index)
-        self.data[c_slice] = xp.einsum(subscripts, operator, self.data[c_slice])
+        if np.max(t_index) <= 25:
+            self.data[c_slice] = xp.einsum(operator, o_index, self.data[c_slice], c_index, t_index)
+        else:
+            character = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
+            o_index = ''.join([character[i] for i in o_index])
+            c_index = ''.join([character[i] for i in c_index])
+            t_index = ''.join([character[i] for i in t_index])
+            subscripts = '{},{}->{}'.format(o_index, c_index, t_index)
+            self.data[c_slice] = xp.einsum(subscripts, operator, self.data[c_slice])
 
     def projection(self, target):
         xp = self.xp
