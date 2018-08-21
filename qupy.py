@@ -56,7 +56,7 @@ class Qubits:
             for _c in control:
                 c_slice[_c] = slice(1, 2)
         if control_sub is not None:
-            for _c in control:
+            for _c in control_sub:
                 c_slice[_c] = slice(0, 1)
 
         c_index = list(range(self.size))
