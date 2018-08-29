@@ -88,7 +88,7 @@ class Qubits:
         '''
 
         # alternative code
-        if np.max(t_index) <= 25:
+        if (np.max(t_index) <= 25) and (xp == np):
             self.data[c_slice] = xp.einsum(operator, o_index, self.data[c_slice], c_index, t_index)
         else:
             character = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
