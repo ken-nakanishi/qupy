@@ -1,3 +1,5 @@
 # qupy
 
-GPUに対応した量子回路シミュレータです(cupy使用)
+CPU,GPU両対応の量子回路シミュレータです．
+
+GPU対応には[cupy](https://cupy.chainer.org/)を使用しています．
