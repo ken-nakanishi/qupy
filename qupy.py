@@ -39,8 +39,13 @@ class Qubits:
         if isinstance(control_0, int):
             control_0 = (control_0,)
 
-        self.data = xp.asarray(self.data, dtype=self.dtype).reshape([2] * int(math.log2(self.data.size)))
-        operator = xp.asarray(operator, dtype=self.dtype).reshape([2] * int(math.log2(operator.size)))
+        self.data = xp.asarray(self.data, dtype=self.dtype)
+        operator = xp.asarray(operator, dtype=self.dtype)
+
+        if self.data.ndim == 1:
+            self.data = self.data.reshape([2] * int(math.log2(self.data.size)))
+        if operator.shape[0] != 2:
+            operator = operator.reshape([2] * int(math.log2(operator.size)))
 
         assert operator.ndim == len(target) * 2, 'You must set operator.size==exp(len(target)*2)'
 
@@ -81,12 +86,6 @@ class Qubits:
         self.data = xp.tile(data[obs] / p[obs], q_index)
         return obs
 
-    def info(self, data=True, shape=False):
-        if data:
-            print('data: {}'.format(self.data.flatten()))
-        if shape:
-            print('shape: {}'.format(self.data.shape))
-
     def to_scalar(self, x):
         if self.xp != np:
             if isinstance(x, cupy.ndarray):
@@ -98,6 +97,7 @@ class Qubits:
 
 if __name__ == '__main__':
     from operators import H, X, rz, swap
+    np.set_printoptions(precision=3, suppress=True, linewidth=1000)
 
     iswap = np.array([[1, 0, 0, 0],
                       [0, 0, 1j, 0],
@@ -107,16 +107,16 @@ if __name__ == '__main__':
     q = Qubits(3)
     q.gate(H, target=0)
     q.gate(H, target=1)
-    q.info()
+    print(q.data.flatten())
     q.gate(X, target=2, control=(0, 1))
-    q.info()
+    print(q.data.flatten())
     q.gate(X, target=0, control=1, control_0=2)
-    q.info()
-    q.gate(swap, target=(1, 2))
-    q.info()
+    print(q.data.flatten())
+    q.gate(swap, target=(0, 2))
+    print(q.data.flatten())
     q.gate(rz(np.pi / 4), target=1)
-    q.info()
-    q.gate(iswap, target=(1, 2))
-    q.info()
+    print(q.data.flatten())
+    q.gate(iswap, target=(2, 1))
+    print(q.data.flatten())
     res = q.projection(target=1)
     print(res)
