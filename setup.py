@@ -9,7 +9,7 @@ with open('LICENSE') as f:
     license = f.read()
 
 setup(
-    name='sample',
+    name='QuPy',
     version='0.1.0',
     description='A quantum circuit simulator for both CPU and GPU',
     long_description=readme,
