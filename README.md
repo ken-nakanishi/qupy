@@ -9,6 +9,11 @@ QuPy uses [CuPy](https://cupy.chainer.org/) to support GPU.
 pip install qupy
 ```
 
+## Documents
+https://qupy.readthedocs.io/en/latest/ (In preparation. Your contribution is welcome!)
+
+## Development
+Your contribution is welcome!
 
 ## Example
 
@@ -53,7 +58,29 @@ pip install qupy
   0.5       +0.j          0.        +0.j          0.        +0.j
   0.        +0.j          0.5       +0.j        ]
 
+>>> res = q.projection(target=0)
+>>> print(res)
+0
+>>> print(q.data.flatten())
+[ 0.56625665-0.11263545j  0.        +0.j         -0.11263545+0.56625665j
+  0.57735027+0.j          0.        +0.j          0.        +0.j
+  0.        +0.j          0.        +0.j        ]
+
+>>> q.gate(H, target=1)
+>>> q.gate(swap, target=(2, 0), control=1)
+>>> print(q.data.flatten())
+[ 0.32075862+0.32075862j  0.40824829+0.j          0.4800492 -0.4800492j
+  0.        +0.j          0.        +0.j          0.        +0.j
+ -0.40824829+0.j          0.        +0.j        ]
+
 >>> res = q.projection(target=1)
 >>> print(res)
 1
+>>> print(q.data.flatten())
+[ 0.        +0.j          0.        +0.j          0.60597922-0.60597922j
+  0.        +0.j          0.        +0.j          0.        +0.j
+ -0.51534296+0.j          0.        +0.j        ]
 ```
+
+## License
+MIT License (see LICENSE file).
