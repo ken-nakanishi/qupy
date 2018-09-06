@@ -71,7 +71,7 @@ class Qubits:
         operator = xp.asarray(operator, dtype=self.dtype)
 
         if self.data.ndim == 1:
-            self.data = self.data.reshape([2] * int(math.log2(self.data.size)))
+            self.data = self.data.reshape([2] * self.size)
         if operator.shape[0] != 2:
             operator = operator.reshape([2] * int(math.log2(operator.size)))
 
@@ -116,13 +116,18 @@ class Qubits:
         """
         xp = self.xp
 
+        self.data = xp.asarray(self.data, dtype=self.dtype)
+        if self.data.ndim == 1:
+            self.data = self.data.reshape([2] * self.size)
+
         data = xp.split(self.data, [1], axis=target)
         p = [self._to_scalar(xp.sum(data[i] * xp.conj(data[i])).real) for i in (0, 1)]
         obs = self._to_scalar(xp.random.choice([0, 1], p=p))
 
-        q_index = [1] * self.size
-        q_index[target] = 2
-        self.data = xp.tile(data[obs] / p[obs], q_index)
+        if obs == 0:
+            self.data = xp.concatenate((data[obs] / math.sqrt(p[obs]), xp.zeros_like(data[obs])), target)
+        else:
+            self.data = xp.concatenate((xp.zeros_like(data[obs]), data[obs] / math.sqrt(p[obs])), target)
         return obs
 
     def _to_scalar(self, x):
