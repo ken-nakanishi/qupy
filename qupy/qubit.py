@@ -10,6 +10,26 @@ except:
 
 
 class Qubits:
+    """
+    Creating qubits.
+
+    Args:
+        size (:class:`int`):
+            Number of qubits.
+        dtype:
+            Data type of the data array.
+        gpu (:class:`int`):
+            GPU machine number.
+
+    Attributes:
+        data (:class:`numpy.ndarray` or :class:`cupy.ndarray`):
+            The state of qubits.
+        size:
+            Number of qubits.
+        dtype:
+            Data type of the data array.
+    """
+
     def __init__(self, size, dtype=np.complex128, gpu=-1):
         if gpu >= 0:
             self.xp = cupy
@@ -24,12 +44,20 @@ class Qubits:
         self.data[tuple([0] * self.size)] = 1
 
     def gate(self, operator, target, control=None, control_0=None):
-        '''
-        :param (numpy.array or cupy.ndarray) operator: unitary operator
-        :param (None or int or tuple of int) target: operated qubits
-        :param (None or int or tuple of int) control: operate target qubits where all control qubits are 1
-        :param (None or int or tuple of int) control_0: operate target qubits where all control qubits are 0
-        '''
+        """gate(self, operator, target, control=None, control_0=None)
+
+        Gate method.
+
+        Args:
+            operator (:class:`numpy.ndarray` or :class:`cupy.ndarray`):
+                Unitary operator
+            target (None or :class:`int` or :class:`tuple` of :class:`int`):
+                Operated qubits
+            control (None or :class:`int` or :class:`tuple` of :class:`int`):
+                Operate target qubits where all control qubits are 1
+            control_0 (None or :class:`int` or :class:`tuple` of :class:`int`):
+                Operate target qubits where all control qubits are 0
+        """
         xp = self.xp
 
         if isinstance(target, int):
@@ -75,18 +103,29 @@ class Qubits:
         self.data[c_slice] = xp.einsum(subscripts, operator, self.data[c_slice])
 
     def projection(self, target):
+        """projection(self, target)
+
+        Projection method.
+
+        Args:
+            target (None or :class:`int` or :class:`tuple` of :class:`int`):
+                projected qubits
+
+        Returns:
+            :class:`int`: O or 1.
+        """
         xp = self.xp
 
         data = xp.split(self.data, [1], axis=target)
-        p = [self.to_scalar(xp.sum(data[i] * xp.conj(data[i])).real) for i in (0, 1)]
-        obs = self.to_scalar(xp.random.choice([0, 1], p=p))
+        p = [self._to_scalar(xp.sum(data[i] * xp.conj(data[i])).real) for i in (0, 1)]
+        obs = self._to_scalar(xp.random.choice([0, 1], p=p))
 
         q_index = [1] * self.size
         q_index[target] = 2
         self.data = xp.tile(data[obs] / p[obs], q_index)
         return obs
 
-    def to_scalar(self, x):
+    def _to_scalar(self, x):
         if self.xp != np:
             if isinstance(x, cupy.ndarray):
                 x = cupy.asnumpy(x)
@@ -96,7 +135,7 @@ class Qubits:
 
 
 if __name__ == '__main__':
-    from operators import H, X, rz, swap
+    from qupy.operator import H, X, rz, swap
     np.set_printoptions(precision=3, suppress=True, linewidth=1000)
 
     iswap = np.array([[1, 0, 0, 0],
