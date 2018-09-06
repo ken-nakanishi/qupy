@@ -100,7 +100,7 @@ class Qubits:
         c_index = ''.join([character[i] for i in c_index])
         t_index = ''.join([character[i] for i in t_index])
         subscripts = '{},{}->{}'.format(o_index, c_index, t_index)
-        self.data[c_slice] = xp.einsum(subscripts, operator, self.data[c_slice])
+        self.data[tuple(c_slice)] = xp.einsum(subscripts, operator, self.data[tuple(c_slice)])
 
     def projection(self, target):
         """projection(self, target)
@@ -144,18 +144,26 @@ if __name__ == '__main__':
                       [0, 0, 0, 1]])
 
     q = Qubits(3)
+    print(q.data.flatten())
+
     q.gate(H, target=0)
     q.gate(H, target=1)
     print(q.data.flatten())
+
+    q.data = [0, 1, 0, 0, 0, 0, 0, 0]
+    q.gate(X, target=2)
+    print(q.data.flatten())
+
+    q.gate(H, target=0)
+    q.gate(H, target=1)
     q.gate(X, target=2, control=(0, 1))
-    print(q.data.flatten())
     q.gate(X, target=0, control=1, control_0=2)
-    print(q.data.flatten())
     q.gate(swap, target=(0, 2))
+    q.gate(rz(np.pi / 8), target=2, control_0=1)
     print(q.data.flatten())
-    q.gate(rz(np.pi / 4), target=1)
-    print(q.data.flatten())
+
     q.gate(iswap, target=(2, 1))
     print(q.data.flatten())
+
     res = q.projection(target=1)
     print(res)
