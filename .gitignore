@@ -1,3 +1,5 @@
 _build/
+build/
+dist/
 qupy.egg-info/
 make.bat
