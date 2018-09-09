@@ -2,11 +2,22 @@
 
 QuPy is a quantum circuit simulator for both CPU and GPU.
 
+The features of QuPy are as follows.
+- **fast**: You can experiment with your idea quickly!
+- **simple**: You can experiment with your idea easily!
+
+QuPy supports both Python 3 and Python 2.
+
 QuPy uses [CuPy](https://cupy.chainer.org/) to support GPU.
 
 ## Install
+
 ```bash
 pip install qupy
+```
+or
+```bash
+pip3 install qupy
 ```
 
 ## Documents
