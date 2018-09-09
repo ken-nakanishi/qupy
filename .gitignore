@@ -3,3 +3,4 @@ build/
 dist/
 qupy.egg-info/
 make.bat
+venv/

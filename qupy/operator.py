@@ -12,14 +12,16 @@ Y = np.array([[0, -1], [1, 0]]) * 1j
 Z = np.array([[1, 0], [0, -1]])
 H = np.array([[1, 1], [1, -1]]) / math.sqrt(2)
 S = np.array([[1, 0], [0, 1j]])
+T = np.array([[1, 0], [0, cmath.exp(1j * np.pi / 4)]])
+Sdag = np.conj(S.T)
+Tdag = np.conj(T.T)
 
 rx = lambda phi: math.cos(phi/2) * I - 1j * math.sin(phi/2) * X
 ry = lambda phi: math.cos(phi/2) * I - 1j * math.sin(phi/2) * Y
 rz = lambda phi: math.cos(phi/2) * I - 1j * math.sin(phi/2) * Z
 
 sqrt_not = np.array([[1 + 1j, 1 - 1j], [1 - 1j, 1 + 1j]]) / 2
-phase_shift = lambda phi: np.array([[1, 0], [0, cmath.exp(-1j * phi)]])
-g_phase_shift = lambda phi: cmath.exp(1j * phi)
+phase_shift = lambda phi: np.array([[1, 0], [0, cmath.exp(1j * phi)]])
 
 
 def swap():
@@ -44,6 +46,11 @@ def sqrt_swap():
 
 swap = swap()
 sqrt_swap = sqrt_swap()
+
+# alias
+sqrt_X = sqrt_not
+sqrt_Z = S
+sqrt_Zdag = Sdag
 
 
 if __name__ == '__main__':
