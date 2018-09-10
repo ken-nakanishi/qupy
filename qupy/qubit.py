@@ -89,7 +89,8 @@ class Qubits:
         t_index = list(range(self.size))
         for i, _t in enumerate(target):
             t_index[_t] = self.size + i
-        o_index = [*list(range(self.size, self.size + len(target))), *target]
+        # o_index = [*list(range(self.size, self.size + len(target))), *target]
+        o_index = list(range(self.size, self.size + len(target))) + list(target)
 
         # Use following code when numpy bug is removed and cupy can use this einsum format.
         # self.data[c_slice] = xp.einsum(operator, o_index, self.data[c_slice], c_index, t_index)

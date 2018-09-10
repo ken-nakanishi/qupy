@@ -5,3 +5,5 @@ dist/
 make.bat
 venv/
 .pytest_cache/
+.python-version
+*.pyc
