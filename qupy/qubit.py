@@ -43,6 +43,42 @@ class Qubits:
         self.data = self.xp.zeros([2] * self.size, dtype=dtype)
         self.data[tuple([0] * self.size)] = 1
 
+    def set_state(self, state):
+        """set_state(self, state)
+
+        Set state.
+
+        Args:
+            state (:class:`str` or :class:`list` or :class:`numpy.ndarray` or :class:`cupy.ndarray`):
+                If you set state as :class:`str`, you can set state \state>
+                (e.g. state='0110' -> \0110>.)
+                otherwise, qubit state is set that you entered as state.
+        """
+        if isinstance(state, str):
+            assert len(state) == self.data.ndim, 'There were {} qubits prepared, but you specified {} qubits'.format(
+                self.data.ndim, len(state))
+            self.data = self.xp.zeros_like(self.data)
+            self.data[tuple([int(i) for i in state])] = 1
+        else:
+            self.data = self.xp.asarray(state, dtype=self.dtype)
+            if self.data.ndim == 1:
+                self.data = self.data.reshape([2] * self.size)
+
+    def get_state(self, flatten=True):
+        """get_state(self, flatten=True)
+
+        Get state.
+
+        Args:
+            flatten (:class:`bool`):
+                If you set flatten=False, you can get data format used in QuPy.
+                otherwise, you get state reformated to 1D-array.
+        """
+        if flatten:
+            return self.data.flatten()
+        else:
+            return self.data
+
     def gate(self, operator, target, control=None, control_0=None):
         """gate(self, operator, target, control=None, control_0=None)
 

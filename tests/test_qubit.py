@@ -29,6 +29,51 @@ def test_init():
     )
 
 
+def test_set_state():
+    q = Qubits(2)
+    q.set_state('10')
+    assert q.data[0, 0] == 0
+    assert q.data[0, 1] == 0
+    assert q.data[1, 0] == 1
+    assert q.data[1, 1] == 0
+    assert np.allclose(
+        q.data.flatten(),
+        np.array([0, 0, 1, 0])
+    )
+    q.set_state([0, 1, 0, 0])
+    assert q.data[0, 0] == 0
+    assert q.data[0, 1] == 1
+    assert q.data[1, 0] == 0
+    assert q.data[1, 1] == 0
+    assert np.allclose(
+        q.data.flatten(),
+        np.array([0, 1, 0, 0])
+    )
+    q.set_state([[0, 0], [0, 1]])
+    assert q.data[0, 0] == 0
+    assert q.data[0, 1] == 0
+    assert q.data[1, 0] == 0
+    assert q.data[1, 1] == 1
+    assert np.allclose(
+        q.data,
+        np.array([[0, 0], [0, 1]])
+    )
+
+
+def test_get_state():
+    q = Qubits(2)
+    q.set_state('11')
+    assert np.allclose(
+        q.get_state(),
+        np.array([0, 0, 0, 1])
+    )
+    q.set_state('01')
+    assert np.allclose(
+        q.get_state(flatten=False),
+        np.array([[0, 1], [0, 0]])
+    )
+
+
 def test_gate_single_qubit():
     q = Qubits(1)
     q.gate(Y, target=0)
