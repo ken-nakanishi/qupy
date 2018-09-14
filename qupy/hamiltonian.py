@@ -81,3 +81,15 @@ def expect(q, H):
         q.set_state(np.copy(org_data))
     return ret
     
+if __name__ == '__main__':
+    from qubit import Qubits
+    import qupy.operator as operator
+    ham = Hamiltonian(3, coefs=[2,1,1], ops = ["XII", "IYI", "IIZ"])
+    q = Qubits(3)
+    q.set_state("101")
+    q.gate(operator.H, target = 0)
+    q.gate(operator.H, target = 1)
+    q.gate(operator.S, target = 1)    
+    print(q.get_state())
+    print(q.expect(ham))
+    print(expect(q,ham))
