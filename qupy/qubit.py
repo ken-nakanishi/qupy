@@ -3,6 +3,7 @@ from __future__ import division
 from __future__ import print_function
 import numpy as np
 import math
+import qupy.operator as operator
 try:
     import cupy
 except:
@@ -175,9 +176,41 @@ class Qubits:
             x = np.asscalar(x)
         return x
 
+    def expect(self, H):
+        """expect(self, H)
+        returns expectation value of a hamiltonian H.
+
+        Args:
+            H (:class:`qupy.hamiltonian.Hamiltonian`):
+                Hamiltonian object that contains the hamiltonian.
+        
+        Returns:
+            :class:`float`: expectation value of H
+        """
+        assert self.size == H.n_qubit
+        xp = self.xp
+        ret = 0
+        org_data = np.copy(self.data)
+        
+        character = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
+        c_index = character[:self.size]
+        subscripts = '{},{}'.format(c_index,c_index)
+        for coef, op in zip(H.coefs, H.ops):
+            for i in range(H.n_qubit):
+                if op[i] == "I":
+                    pass
+                elif op[i] == "X":
+                    q.gate(operator.X, target = i)
+                elif op[i] == "Y":
+                    q.gate(operator.Y, target = i)
+                elif op[i] == "Z":
+                    q.gate(operator.Z, target = i)
+            ret += coef*xp.real(xp.einsum(subscripts, np.conj(org_data), q.data))
+            self.set_state(np.copy(org_data))
+        return ret
 
 if __name__ == '__main__':
-    from qupy.operator import H, X, rz, swap
+    from qupy.operator import H, X, rz, S, swap
     np.set_printoptions(precision=3, suppress=True, linewidth=1000)
 
     iswap = np.array([[1, 0, 0, 0],
@@ -209,3 +242,13 @@ if __name__ == '__main__':
 
     res = q.projection(target=1)
     print(res)
+
+    from hamiltonian import Hamiltonian
+    ham = Hamiltonian(3, coefs=[2,1,1], ops = ["XII", "IYI", "IIZ"])
+    q.set_state("000")
+    q.gate(H, target = 0)
+    q.gate(H, target = 1)
+    q.gate(S, target = 1)    
+    print(q.get_state())
+    print(q.expect(ham))
+
