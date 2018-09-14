@@ -48,12 +48,17 @@ class Hamiltonian:
         self.coefs.append(coef)
         self.ops.append(op)
 
-    def get_matrix(self, ifdense = False):
+    def get_matrix(self, ifdense=False):
         """get_matrix(self)
         get a matrix representation of the Hamiltonian
 
+        Args:
+            ifdense (:class:`Bool`): 
+                select sparse or dense.
+                Default is False.
+
         Returns:
-            :class:`scipy.sparse.csr_matrix`:
+            :class:`scipy.sparse.csr_matrix` or `numpy.ndarray`:
                 matrix representation of the Hamiltonian
         """
         op = self.ops[0]
@@ -137,9 +142,9 @@ if __name__ == '__main__':
 
     from scipy.sparse.linalg import eigsh
     from numpy.linalg import eigh
-    ham_matrix = ham.get_matrix(ifdense = True)
+    ham_matrix = ham.get_matrix(ifdense=True)
     print(ham_matrix)
     eigvals, eigvecs = eigh(ham_matrix)
-    #for sparse matrix
+    # for sparse matrix
     #eigvals, eigvecs = eigsh(ham_matrix)
     print(eigvals)
