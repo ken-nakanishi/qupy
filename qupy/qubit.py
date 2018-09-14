@@ -200,12 +200,12 @@ class Qubits:
                 if op[i] == "I":
                     pass
                 elif op[i] == "X":
-                    q.gate(operator.X, target = i)
+                    self.gate(operator.X, target = i)
                 elif op[i] == "Y":
-                    q.gate(operator.Y, target = i)
+                    self.gate(operator.Y, target = i)
                 elif op[i] == "Z":
-                    q.gate(operator.Z, target = i)
-            ret += coef*xp.real(xp.einsum(subscripts, np.conj(org_data), q.data))
+                    self.gate(operator.Z, target = i)
+            ret += coef*xp.real(xp.einsum(subscripts, np.conj(org_data), self.data))
             self.set_state(np.copy(org_data))
         return ret
 

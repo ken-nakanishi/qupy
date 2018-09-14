@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import numpy as np
+from qupy.operator import X, Y, Z
 
 class Hamiltonian:
     """
@@ -45,6 +46,38 @@ class Hamiltonian:
         self.coefs.append(coef)
         self.ops.append(op)
 
+def expect(q, H):
+    """expect(q, H)
+    calculates expectation value of H with respect to q
+
+    Args:
+        q (:class:`qupy.qubit.Qubits`):
+            the state you want to take the expectation
+        H (:class:`qupy.hamiltonian.Hamiltonian`)
+            the Hamiltonian
+
+    Return:
+        :class:`float`: expectation value of H with respect to q
+    """
+    assert q.size == H.n_qubit
+    xp = q.xp
+    ret = 0
+    org_data = np.copy(q.data)
     
-
-
+    character = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
+    c_index = character[:q.size]
+    subscripts = '{},{}'.format(c_index,c_index)
+    for coef, op in zip(H.coefs, H.ops):
+        for i in range(H.n_qubit):
+            if op[i] == "I":
+                pass
+            elif op[i] == "X":
+                q.gate(operator.X, target = i)
+            elif op[i] == "Y":
+                q.gate(operator.Y, target = i)
+            elif op[i] == "Z":
+                q.gate(operator.Z, target = i)
+        ret += coef*xp.real(xp.einsum(subscripts, np.conj(org_data), q.data))
+        q.set_state(np.copy(org_data))
+    return ret
+    
