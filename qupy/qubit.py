@@ -112,7 +112,8 @@ class Qubits:
         if operator.shape[0] != 2:
             operator = operator.reshape([2] * int(math.log2(operator.size)))
 
-        assert operator.ndim == len(target) * 2, 'You must set operator.size==exp(len(target)*2)'
+        assert operator.ndim == len(
+            target) * 2, 'You must set operator.size==exp(len(target)*2)'
 
         c_slice = [slice(None)] * self.size
         if control is not None:
@@ -127,7 +128,8 @@ class Qubits:
         for i, _t in enumerate(target):
             t_index[_t] = self.size + i
         # o_index = [*list(range(self.size, self.size + len(target))), *target]
-        o_index = list(range(self.size, self.size + len(target))) + list(target)
+        o_index = list(range(self.size, self.size +
+                             len(target))) + list(target)
 
         # Use following code when numpy bug is removed and cupy can use this einsum format.
         # self.data[c_slice] = xp.einsum(operator, o_index, self.data[c_slice], c_index, t_index)
@@ -138,7 +140,8 @@ class Qubits:
         c_index = ''.join([character[i] for i in c_index])
         t_index = ''.join([character[i] for i in t_index])
         subscripts = '{},{}->{}'.format(o_index, c_index, t_index)
-        self.data[tuple(c_slice)] = xp.einsum(subscripts, operator, self.data[tuple(c_slice)])
+        self.data[tuple(c_slice)] = xp.einsum(
+            subscripts, operator, self.data[tuple(c_slice)])
 
     def projection(self, target):
         """projection(self, target)
@@ -159,13 +162,16 @@ class Qubits:
             self.data = self.data.reshape([2] * self.size)
 
         data = xp.split(self.data, [1], axis=target)
-        p = [self._to_scalar(xp.sum(data[i] * xp.conj(data[i])).real) for i in (0, 1)]
+        p = [self._to_scalar(xp.sum(data[i] * xp.conj(data[i])).real)
+             for i in (0, 1)]
         obs = self._to_scalar(xp.random.choice([0, 1], p=p))
 
         if obs == 0:
-            self.data = xp.concatenate((data[obs] / math.sqrt(p[obs]), xp.zeros_like(data[obs])), target)
+            self.data = xp.concatenate(
+                (data[obs] / math.sqrt(p[obs]), xp.zeros_like(data[obs])), target)
         else:
-            self.data = xp.concatenate((xp.zeros_like(data[obs]), data[obs] / math.sqrt(p[obs])), target)
+            self.data = xp.concatenate((xp.zeros_like(data[obs]), data[
+                                       obs] / math.sqrt(p[obs])), target)
         return obs
 
     def _to_scalar(self, x):
@@ -183,7 +189,7 @@ class Qubits:
         Args:
             H (:class:`qupy.hamiltonian.Hamiltonian`):
                 Hamiltonian object that contains the hamiltonian.
-        
+
         Returns:
             :class:`float`: expectation value of H
         """
@@ -191,21 +197,22 @@ class Qubits:
         xp = self.xp
         ret = 0
         org_data = np.copy(self.data)
-        
+
         character = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
         c_index = character[:self.size]
-        subscripts = '{},{}'.format(c_index,c_index)
+        subscripts = '{},{}'.format(c_index, c_index)
         for coef, op in zip(H.coefs, H.ops):
             for i in range(H.n_qubit):
                 if op[i] == "I":
                     pass
                 elif op[i] == "X":
-                    self.gate(operator.X, target = i)
+                    self.gate(operator.X, target=i)
                 elif op[i] == "Y":
-                    self.gate(operator.Y, target = i)
+                    self.gate(operator.Y, target=i)
                 elif op[i] == "Z":
-                    self.gate(operator.Z, target = i)
-            ret += coef*xp.real(xp.einsum(subscripts, np.conj(org_data), self.data))
+                    self.gate(operator.Z, target=i)
+            ret += coef * xp.real(xp.einsum(subscripts,
+                                            np.conj(org_data), self.data))
             self.set_state(np.copy(org_data))
         return ret
 
@@ -244,11 +251,10 @@ if __name__ == '__main__':
     print(res)
 
     from hamiltonian import Hamiltonian
-    ham = Hamiltonian(3, coefs=[2,1,1], ops = ["XII", "IYI", "IIZ"])
+    ham = Hamiltonian(3, coefs=[2, 1, 1], ops=["XII", "IYI", "IIZ"])
     q.set_state("000")
-    q.gate(H, target = 0)
-    q.gate(H, target = 1)
-    q.gate(S, target = 1)    
+    q.gate(H, target=0)
+    q.gate(H, target=1)
+    q.gate(S, target=1)
     print(q.get_state())
     print(q.expect(ham))
-
