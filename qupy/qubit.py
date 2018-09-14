@@ -96,11 +96,11 @@ class Qubits:
         """
         xp = self.xp
 
-        if isinstance(target, int):
+        if np.issubdtype(type(target), np.integer):
             target = (target,)
-        if isinstance(control, int):
+        if np.issubdtype(type(control), np.integer):
             control = (control,)
-        if isinstance(control_0, int):
+        if np.issubdtype(type(control_0), np.integer):
             control_0 = (control_0,)
 
         self.data = xp.asarray(self.data, dtype=self.dtype)
