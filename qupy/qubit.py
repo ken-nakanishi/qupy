@@ -185,7 +185,7 @@ class Qubits:
             for key, value in operator.items():
                 self.data = xp.copy(org_data)
                 assert len(key) == self.size, \
-                    'Length of each key must be {} but len({}) is {}.'.format(self.size, key, len(key))
+                    'Length of each key must be {} ,but len({}) is {}.'.format(self.size, key, len(key))
 
                 for i, op in enumerate(key):
                     if op in 'XYZ':
