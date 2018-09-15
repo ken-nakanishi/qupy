@@ -174,38 +174,3 @@ class Qubits:
         if isinstance(x, np.ndarray):
             x = np.asscalar(x)
         return x
-
-
-if __name__ == '__main__':
-    from qupy.operator import H, X, rz, swap
-    np.set_printoptions(precision=3, suppress=True, linewidth=1000)
-
-    iswap = np.array([[1, 0, 0, 0],
-                      [0, 0, 1j, 0],
-                      [0, 1j, 0, 0],
-                      [0, 0, 0, 1]])
-
-    q = Qubits(3)
-    print(q.data.flatten())
-
-    q.gate(H, target=0)
-    q.gate(H, target=1)
-    print(q.data.flatten())
-
-    q.data = [0, 1, 0, 0, 0, 0, 0, 0]
-    q.gate(X, target=2)
-    print(q.data.flatten())
-
-    q.gate(H, target=0)
-    q.gate(H, target=1)
-    q.gate(X, target=2, control=(0, 1))
-    q.gate(X, target=0, control=1, control_0=2)
-    q.gate(swap, target=(0, 2))
-    q.gate(rz(np.pi / 8), target=2, control_0=1)
-    print(q.data.flatten())
-
-    q.gate(iswap, target=(2, 1))
-    print(q.data.flatten())
-
-    res = q.projection(target=1)
-    print(res)

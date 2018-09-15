@@ -51,8 +51,3 @@ sqrt_swap = sqrt_swap()
 sqrt_X = sqrt_not
 sqrt_Z = S
 sqrt_Zdag = Sdag
-
-
-if __name__ == '__main__':
-    print(swap.reshape((4,4)))
-    print(sqrt_swap.reshape((4,4)))
