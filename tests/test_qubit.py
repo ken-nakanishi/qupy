@@ -6,7 +6,7 @@ import math
 import cmath
 import pytest
 from qupy.qubit import Qubits
-from qupy.operator import *
+from qupy.operator import I, X, Y, Z, rx, ry, rz, swap
 
 
 def test_init():
@@ -180,32 +180,65 @@ def test_gate_control_0():
     assert q.data[1, 1] == 0
 
 
-def test_projection():
+def test_project():
     q = Qubits(2)
-    res0 = q.projection(target=0)
-    res1 = q.projection(target=1)
+    res0 = q.project(target=0)
+    res1 = q.project(target=1)
     assert res0 == 0
     assert res1 == 0
 
     q = Qubits(2)
     q.gate(Y, target=0)
-    res0 = q.projection(target=0)
-    res1 = q.projection(target=1)
+    res0 = q.project(target=0)
+    res1 = q.project(target=1)
     assert res0 == 1
     assert res1 == 0
 
     q = Qubits(2)
     q.gate(Y, target=1)
-    res0 = q.projection(target=0)
-    res1 = q.projection(target=1)
+    res0 = q.project(target=0)
+    res1 = q.project(target=1)
     assert res0 == 0
     assert res1 == 1
 
     q = Qubits(2)
     q.gate(Y, target=0)
     q.gate(Y, target=1)
-    res0 = q.projection(target=0)
-    res1 = q.projection(target=1)
+    res0 = q.project(target=0)
+    res1 = q.project(target=1)
     assert res0 == 1
     assert res1 == 1
 
+
+def test_expect():
+    q = Qubits(2)
+    res = q.expect(np.kron(I, I))
+    assert res == 1
+
+    q = Qubits(2)
+    res = q.expect(np.kron(I, X))
+    assert res == 0
+
+    q = Qubits(2)
+    res = q.expect({'YI': 2.5, 'II': 2, 'IX': 1.5, 'IZ': 1})
+    assert res == 3
+
+    q = Qubits(2)
+    q.set_state('01')
+    res = q.expect({'IZ': 2})
+    assert res == -2
+
+    q = Qubits(2)
+    q.set_state('10')
+    res = q.expect({'IZ': 2})
+    assert res == 2
+
+    q = Qubits(2)
+    q.set_state('01')
+    res = q.expect({'ZI': 2})
+    assert res == 2
+
+    q = Qubits(2)
+    q.set_state('11')
+    res = q.expect({'ZZ': 2})
+    assert res == 2

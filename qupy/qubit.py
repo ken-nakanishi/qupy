@@ -3,6 +3,8 @@ from __future__ import division
 from __future__ import print_function
 import numpy as np
 import math
+import sys
+import qupy.operator
 try:
     import cupy
 except:
@@ -102,11 +104,7 @@ class Qubits:
         if np.issubdtype(type(control_0), np.integer):
             control_0 = (control_0,)
 
-        self.data = xp.asarray(self.data, dtype=self.dtype)
         operator = xp.asarray(operator, dtype=self.dtype)
-
-        if self.data.ndim == 1:
-            self.data = self.data.reshape([2] * self.size)
         if operator.shape[0] != 2:
             operator = operator.reshape([2] * int(math.log2(operator.size)))
 
@@ -138,7 +136,7 @@ class Qubits:
         subscripts = '{},{}->{}'.format(o_index, c_index, t_index)
         self.data[c_slice] = xp.einsum(subscripts, operator, self.data[c_slice])
 
-    def projection(self, target):
+    def project(self, target):
         """projection(self, target)
 
         Projection method.
@@ -166,6 +164,50 @@ class Qubits:
             self.data = xp.concatenate((xp.zeros_like(data[obs]), data[obs] / math.sqrt(p[obs])), target)
         return obs
 
+    def expect(self, operator):
+        """expect(self, operator)
+
+        Method to get expected value.
+
+        Args:
+            operator (:class:`dict` or :class:`numpy.ndarray` or :class:`cupy.ndarray`):
+                Physical quantity operator.
+
+        Returns:
+            :class:`float`: Expected value.
+        """
+        xp = self.xp
+
+        if isinstance(operator, dict):
+            tmp = xp.zeros_like(self.data)
+            org_data = self.data
+
+            for key, value in operator.items():
+                self.data = xp.copy(org_data)
+                assert len(key) == self.size, \
+                    'Length of each key must be {} but len({}) is {}.'.format(self.size, key, len(key))
+
+                for i, op in enumerate(key):
+                    if op in 'XYZ':
+                        self.gate(getattr(qupy.operator, op), target=i)
+                    else:
+                        assert op == 'I', 'Keys of input must not include {}.'.format(op)
+
+                tmp += self.data * value
+
+            self.data = org_data
+
+            return np.einsum('i,i', np.conj(tmp.flatten()), self.data.flatten())
+
+        else:
+            assert operator.size == self.data.size ** 2, \
+                'operator.size must be {}. Actual: {}'.format(self.data.size ** 2, operator.size)
+            operator = xp.asarray(operator, dtype=self.dtype)
+            if operator.shape[0] != self.data.size:
+                operator = operator.reshape((self.data.size, self.data.size))
+
+            return np.einsum('i,ij,j', np.conj(self.data.flatten()), operator, self.data.flatten())
+
     def _to_scalar(self, x):
         if self.xp != np:
             if isinstance(x, cupy.ndarray):
@@ -173,3 +215,7 @@ class Qubits:
         if isinstance(x, np.ndarray):
             x = np.asscalar(x)
         return x
+
+    def projection(self, target):
+        sys.stderr.write('`qupy.projection` method is abolished soon. Please use `qupy.project`.')
+        return self.project(target)
