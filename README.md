@@ -80,7 +80,7 @@ Your contribution is welcome!
   0.5       +0.j          0.        +0.j          0.        +0.j
   0.        +0.j          0.5       +0.j        ]
 
->>> res = q.projection(target=0)
+>>> res = q.project(target=0)
 >>> print(res)
 0
 >>> print(q.get_state())
@@ -95,7 +95,7 @@ Your contribution is welcome!
   0.        +0.j          0.        +0.j          0.        +0.j
  -0.40824829+0.j          0.        +0.j        ]
 
->>> res = q.projection(target=1)
+>>> res = q.project(target=1)
 >>> print(res)
 1
 >>> print(q.get_state())
