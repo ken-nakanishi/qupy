@@ -76,8 +76,7 @@ class Qubits:
         """
         if flatten:
             return self.data.flatten()
-        else:
-            return self.data
+        return self.data
 
     def gate(self, operator, target, control=None, control_0=None):
         """gate(self, operator, target, control=None, control_0=None)
