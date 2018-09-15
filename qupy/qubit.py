@@ -120,6 +120,7 @@ class Qubits:
         if control_0 is not None:
             for _c in control_0:
                 c_slice[_c] = slice(0, 1)
+        c_slice = tuple(c_slice)
 
         c_index = list(range(self.size))
         t_index = list(range(self.size))
@@ -137,7 +138,7 @@ class Qubits:
         c_index = ''.join([character[i] for i in c_index])
         t_index = ''.join([character[i] for i in t_index])
         subscripts = '{},{}->{}'.format(o_index, c_index, t_index)
-        self.data[tuple(c_slice)] = xp.einsum(subscripts, operator, self.data[tuple(c_slice)])
+        self.data[c_slice] = xp.einsum(subscripts, operator, self.data[c_slice])
 
     def projection(self, target):
         """projection(self, target)
