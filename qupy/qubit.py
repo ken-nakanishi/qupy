@@ -156,7 +156,7 @@ class Qubits:
 
         data = xp.split(self.data, [1], axis=target)
         p = [self._to_scalar(xp.sum(data[i] * xp.conj(data[i])).real) for i in (0, 1)]
-        obs = self._to_scalar(xp.random.choice([0, 1], p=p))
+        obs = np.random.choice([0, 1], p=p)
 
         if obs == 0:
             self.data = xp.concatenate((data[obs] / math.sqrt(p[obs]), xp.zeros_like(data[obs])), target)
