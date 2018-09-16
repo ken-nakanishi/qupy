@@ -165,14 +165,21 @@ class Qubits:
         return obs
 
     def expect(self, observable):
-        """expect(self, operator)
+        """expect(self, observable)
 
-        Method to get expected value.
+        Method to get expected value of observable.
 
         Args:
             observable (:class:`dict` or :class:`numpy.ndarray` or :class:`cupy.ndarray`):
                 Physical quantity operator.
-                You can use two types of 
+                If you input :class:`numpy.ndarray` or :class:`cupy.ndarray` as observable,
+                this method returns :math:`\langle \psi | observable | \psi>`,
+                where :math:`\psi>` is the states of qubits.
+                If you use :class:`dict` input, you have to set
+                {'operator1': coef1, 'operator2': coef2, 'operator3': coef3, ...},
+                such as {'XIX': 0.32, 'YYZ': 0.11, 'III': 0.02}.
+                If you input :class:`dict` as observable,
+                this method returns :math:`\sum_i coef_i \langle \psi | operator_i | \psi>`,
 
         Returns:
             :class:`float`: Expected value.
