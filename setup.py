@@ -10,7 +10,7 @@ with open('LICENSE') as f:
 
 setup(
     name='qupy',
-    version='0.1.7',
+    version='0.2.0',
     description='QuPy: A quantum circuit simulator for both CPU and GPU',
     long_description=readme,
     author='Ken Nakanishi',
