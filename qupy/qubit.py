@@ -164,25 +164,26 @@ class Qubits:
             self.data = xp.concatenate((xp.zeros_like(data[obs]), data[obs] / math.sqrt(p[obs])), target)
         return obs
 
-    def expect(self, operator):
+    def expect(self, observable):
         """expect(self, operator)
 
         Method to get expected value.
 
         Args:
-            operator (:class:`dict` or :class:`numpy.ndarray` or :class:`cupy.ndarray`):
+            observable (:class:`dict` or :class:`numpy.ndarray` or :class:`cupy.ndarray`):
                 Physical quantity operator.
+                You can use two types of 
 
         Returns:
             :class:`float`: Expected value.
         """
         xp = self.xp
 
-        if isinstance(operator, dict):
+        if isinstance(observable, dict):
             tmp = xp.zeros_like(self.data)
             org_data = self.data
 
-            for key, value in operator.items():
+            for key, value in observable.items():
                 self.data = xp.copy(org_data)
                 assert len(key) == self.size, \
                     'Length of each key must be {} ,but len({}) is {}.'.format(self.size, key, len(key))
@@ -200,13 +201,13 @@ class Qubits:
             return np.einsum('i,i', np.conj(tmp.flatten()), self.data.flatten())
 
         else:
-            assert operator.size == self.data.size ** 2, \
-                'operator.size must be {}. Actual: {}'.format(self.data.size ** 2, operator.size)
-            operator = xp.asarray(operator, dtype=self.dtype)
-            if operator.shape[0] != self.data.size:
-                operator = operator.reshape((self.data.size, self.data.size))
+            assert observable.size == self.data.size ** 2, \
+                'operator.size must be {}. Actual: {}'.format(self.data.size ** 2, observable.size)
+            observable = xp.asarray(observable, dtype=self.dtype)
+            if observable.shape[0] != self.data.size:
+                observable = observable.reshape((self.data.size, self.data.size))
 
-            return np.einsum('i,ij,j', np.conj(self.data.flatten()), operator, self.data.flatten())
+            return np.einsum('i,ij,j', np.conj(self.data.flatten()), observable, self.data.flatten())
 
     def _to_scalar(self, x):
         if self.xp != np:
