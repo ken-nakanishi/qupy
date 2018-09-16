@@ -173,13 +173,13 @@ class Qubits:
             observable (:class:`dict` or :class:`numpy.ndarray` or :class:`cupy.ndarray`):
                 Physical quantity operator.
                 If you input :class:`numpy.ndarray` or :class:`cupy.ndarray` as observable,
-                this method returns :math:`\langle \psi | observable | \psi>`,
+                this method returns :math:`\langle \psi | \mathrm{observable} | \psi>`,
                 where :math:`\psi>` is the states of qubits.
                 If you use :class:`dict` input, you have to set
                 {'operator1': coef1, 'operator2': coef2, 'operator3': coef3, ...},
                 such as {'XIX': 0.32, 'YYZ': 0.11, 'III': 0.02}.
                 If you input :class:`dict` as observable,
-                this method returns :math:`\sum_i coef_i \langle \psi | operator_i | \psi>`,
+                this method returns :math:`\sum_i coef_i \langle \psi | \mathrm{operator}_i | \psi>`.
 
         Returns:
             :class:`float`: Expected value.
