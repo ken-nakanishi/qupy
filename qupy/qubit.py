@@ -225,5 +225,5 @@ class Qubits:
         return x
 
     def projection(self, target):
-        sys.stderr.write('`qupy.projection` method is abolished soon. Please use `qupy.project`.\n')
+        sys.stderr.write('`qubit.projection` method is abolished soon. Please use `qubit.project`.\n')
         return self.project(target)
