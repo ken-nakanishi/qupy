@@ -206,7 +206,8 @@ class Qubits:
 
             self.data = org_data
 
-            return xp.einsum('i,i', xp.conj(tmp.flatten()), self.data.flatten())
+            ret = xp.einsum('i,i', xp.conj(tmp.flatten()), self.data.flatten())
+            return xp.real(ret)
 
         else:
             assert observable.size == self.data.size ** 2, \
@@ -216,13 +217,15 @@ class Qubits:
                 observable = observable.reshape((self.data.size, self.data.size))
 
             if n_trial <= 0:
-                return xp.einsum('i,ij,j', xp.conj(self.data.flatten()), observable, self.data.flatten())
+                ret = xp.einsum('i,ij,j', xp.conj(self.data.flatten()), observable, self.data.flatten())
+                return xp.real(ret)
             else:
                 w, v = xp.linalg.eigh(observable)
                 dot = xp.einsum('ij,i->j', v, self.data.flatten())
                 probability = xp.real(xp.conj(dot) * dot)
                 distribution = xp.random.multinomial(n_trial, probability, size=1)
-                return xp.sum(w * distribution) / n_trial
+                ret = xp.sum(w * distribution) / n_trial
+                return xp.real(ret)
 
     def _to_scalar(self, x):
         if self.xp != np:
