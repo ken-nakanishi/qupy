@@ -164,7 +164,7 @@ class Qubits:
             self.data = xp.concatenate((xp.zeros_like(data[obs]), data[obs] / math.sqrt(p[obs])), target)
         return obs
 
-    def expect(self, observable):
+    def expect(self, observable, n_trial=-1):
         """expect(self, observable)
 
         Method to get expected value of observable.
@@ -187,6 +187,7 @@ class Qubits:
         xp = self.xp
 
         if isinstance(observable, dict):
+            assert n_trial == -1, 'Sorry, n_trial does not supported in the case that type of observable is dict yet.'
             tmp = xp.zeros_like(self.data)
             org_data = self.data
 
@@ -205,7 +206,7 @@ class Qubits:
 
             self.data = org_data
 
-            return np.einsum('i,i', np.conj(tmp.flatten()), self.data.flatten())
+            return xp.einsum('i,i', xp.conj(tmp.flatten()), self.data.flatten())
 
         else:
             assert observable.size == self.data.size ** 2, \
@@ -214,7 +215,14 @@ class Qubits:
             if observable.shape[0] != self.data.size:
                 observable = observable.reshape((self.data.size, self.data.size))
 
-            return np.einsum('i,ij,j', np.conj(self.data.flatten()), observable, self.data.flatten())
+            if n_trial <= 0:
+                return xp.einsum('i,ij,j', xp.conj(self.data.flatten()), observable, self.data.flatten())
+            else:
+                w, v = xp.linalg.eigh(observable)
+                dot = xp.einsum('ij,i->j', v, self.data.flatten())
+                probability = xp.real(xp.conj(dot) * dot)
+                distribution = xp.random.multinomial(n_trial, probability, size=1)
+                return xp.sum(w * distribution) / n_trial
 
     def _to_scalar(self, x):
         if self.xp != np:
