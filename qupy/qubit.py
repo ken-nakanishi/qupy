@@ -164,7 +164,7 @@ class Qubits:
             self.data = xp.concatenate((xp.zeros_like(data[obs]), data[obs] / math.sqrt(p[obs])), target)
         return obs
 
-    def expect(self, observable, n_trial=-1):
+    def expect(self, observable, n_trial=-1, flip_rate=0):
         """expect(self, observable)
 
         Method to get expected value of observable.
@@ -187,8 +187,9 @@ class Qubits:
         xp = self.xp
 
         if isinstance(observable, dict):
-            assert n_trial == -1, 'Sorry, n_trial does not supported in the case that type of observable is dict yet.'
-            tmp = xp.zeros_like(self.data)
+            assert (flip_rate >= 0) and (flip_rate <= 1),\
+                'You should set 0 <= flip_rate <= 1. Actual: {}'.format(flip_rate)
+            ret = 0
             org_data = self.data
 
             for key, value in observable.items():
@@ -202,14 +203,25 @@ class Qubits:
                     else:
                         assert op == 'I', 'Keys of input must not include {}.'.format(op)
 
-                tmp += self.data * value
+                e_val = xp.einsum('i,i', xp.conj(org_data.flatten()), self.data.flatten())
+                e_val = self._to_scalar(xp.real(e_val))
+
+                if flip_rate > 0:
+                    e_val = e_val * (1 - 2 * flip_rate)
+
+                if n_trial > 0:
+                    probability = (e_val + 1) / 2
+                    probability = np.clip(probability, 0, 1)
+                    e_val = (np.random.binomial(n_trial, probability) / n_trial) * 2 - 1
+
+                ret += e_val * value
 
             self.data = org_data
-
-            ret = xp.einsum('i,i', xp.conj(tmp.flatten()), self.data.flatten())
-            return xp.real(ret)
+            return ret
 
         else:
+            assert flip_rate == 0,\
+                'Sorry, flip_rate does not supported in the case that type of observable is xp.array.'
             assert observable.size == self.data.size ** 2, \
                 'operator.size must be {}. Actual: {}'.format(self.data.size ** 2, observable.size)
             observable = xp.asarray(observable, dtype=self.dtype)
@@ -218,14 +230,14 @@ class Qubits:
 
             if n_trial <= 0:
                 ret = xp.einsum('i,ij,j', xp.conj(self.data.flatten()), observable, self.data.flatten())
-                return xp.real(ret)
+                return self._to_scalar(xp.real(ret))
             else:
                 w, v = xp.linalg.eigh(observable)
                 dot = xp.einsum('ij,i->j', v, self.data.flatten())
                 probability = xp.real(xp.conj(dot) * dot)
                 distribution = xp.random.multinomial(n_trial, probability, size=1)
                 ret = xp.sum(w * distribution) / n_trial
-                return xp.real(ret)
+                return self._to_scalar(xp.real(ret))
 
     def _to_scalar(self, x):
         if self.xp != np:
