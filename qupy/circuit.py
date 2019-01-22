@@ -8,8 +8,8 @@ import qupy.operator
 
 class Gate:
 
-	def __init__(self, gate_type, target, control = None, control_0 = None):
-		self.operator = gate_type
+	def __init__(self, operator, target, control = None, control_0 = None):
+		self.operator = operator
 		self.target = target
 		self.control = control
 		self.control_0 = control_0
