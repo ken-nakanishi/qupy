@@ -5,6 +5,7 @@ import numpy as np
 import math
 import sys
 import qupy.operator
+import qupy.circuit
 try:
     import cupy
 except:
@@ -250,3 +251,11 @@ class Qubits:
     def projection(self, target):
         sys.stderr.write('`qubit.projection` method is abolished soon. Please use `qubit.project`.\n')
         return self.project(target)
+
+    def apply_circuit(circuit):
+        for single_gate in circuit:
+            self.gate(single_gate.operator, single_gate.target, single_gate.control, single_gate.control_0)
+
+    def apply_inverse_circuit(circuit):
+        for single_gate in reversed(circuit):
+            self.gate(single_gate.operator, single_gate.target, single_gate.control, single_gate.control_0)
