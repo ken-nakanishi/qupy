@@ -1,11 +1,9 @@
-# -*- coding: utf-8 -*-
 from __future__ import division
-from __future__ import print_function
 import numpy as np
 import math
 import cmath
 import pytest
-from qupy.operator import *
+from qupy.operator import I, X, Y, Z, H, S, T, Sdag, Tdag, sqrt_not, rx, ry, rz, phase_shift, swap, sqrt_swap
 
 
 ket0 = np.array([1, 0]).reshape((2, 1))
