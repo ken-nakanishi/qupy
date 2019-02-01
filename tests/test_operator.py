@@ -3,7 +3,8 @@ import numpy as np
 import math
 import cmath
 import pytest
-from qupy.operator import I, X, Y, Z, H, S, T, Sdag, Tdag, sqrt_not, rx, ry, rz, phase_shift, swap, sqrt_swap
+from qupy.operator import I, X, Y, Z, H, S, T, Sdag, Tdag, sqrt_not, \
+    rx, ry, rz, phase_shift, swap, sqrt_swap, qft, iqft
 
 
 ket0 = np.array([1, 0]).reshape((2, 1))
@@ -238,3 +239,16 @@ def test_sqrt_swap():
     )
     assert np.allclose(np.dot(sqrt_swap.reshape(4, 4), sqrt_swap.reshape(4, 4)), swap.reshape(4, 4))
 
+
+def test_qft():
+    assert np.allclose(qft(2), np.array([
+        [1, 1, 1, 1],
+        [1, 1j, -1, -1j],
+        [1, -1, 1, -1],
+        [1, -1j, -1, 1j]
+    ]) / 2)
+
+
+def test_iqft():
+    assert np.allclose(iqft(2), np.conj(qft(2)))
+    assert np.allclose(iqft(3), np.conj(qft(3)))
