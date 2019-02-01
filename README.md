@@ -19,6 +19,10 @@ or
 ```bash
 pip3 install qupy
 ```
+or
+```bash
+conda install conda-forge::qupy
+```
 
 ## Documents
 https://qupy.readthedocs.io/en/latest/ (In preparation. Your contribution is welcome!)
