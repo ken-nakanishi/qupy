@@ -61,12 +61,12 @@ class Operator:
     def qft(self, n):
         dim = 2 ** n
         v = self.xp.arange(dim) / dim
-        return np.exp(2j * np.pi * self.xp.einsum('i,j->ij', v, v))
+        return np.exp(2j * np.pi * self.xp.einsum('i,j->ij', v, v)) / math.sqrt(dim)
 
     def iqft(self, n):
         dim = 2 ** n
         v = self.xp.arange(dim) / dim
-        return np.exp(-2j * np.pi * self.xp.einsum('i,j->ij', v, v))
+        return np.exp(-2j * np.pi * self.xp.einsum('i,j->ij', v, v)) / math.sqrt(dim)
 
 
 op = Operator()
