@@ -90,3 +90,5 @@ rx = op.rx
 ry = op.ry
 rz = op.rz
 phase_shift = op.phase_shift
+qft = op.qft
+iqft = op.iqft
