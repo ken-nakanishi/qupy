@@ -58,6 +58,14 @@ class Operator:
         operator[1, 1, 1, 1] = 1
         return operator
 
+    def qft(self, n):
+        v = self.xp.arange(n) / n
+        return np.exp(2j * np.pi * self.xp.einsum('i,j->ij', v, v))
+
+    def iqft(self, n):
+        v = self.xp.arange(n) / n
+        return np.exp(-2j * np.pi * self.xp.einsum('i,j->ij', v, v))
+
 
 op = Operator()
 
