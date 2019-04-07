@@ -106,5 +106,16 @@ Your contribution is welcome!
  -0.51534296+0.j          0.        +0.j        ]
 ```
 
+## Citation
+```
+@Misc{QuPy,
+  author = {Nakanishi, Ken M},
+  title = {{QuPy}: A quantum circuit simulator for both CPU and GPU},
+  year = {2019--},
+  url = "https://github.com/ken-nakanishi/qupy",
+  note = {[Online; accessed <today>]}
+}
+```
+
 ## License
 MIT License (see LICENSE file).
