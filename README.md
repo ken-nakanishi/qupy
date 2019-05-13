@@ -21,6 +21,30 @@ or
 ```bash
 pip3 install qupy
 ```
+or
+```bash
+conda install conda-forge::qupy
+```
+
+## Upgrade QuPy from v0 to v1
+
+QuPy v0
+
+```python
+from qupy.qubit import Qubits
+from qupy.operator import H, X, rz, swap
+```
+
+QuPy v1
+
+```python
+from qupy import Qubits, Operator
+op = Operator()
+H = op.H
+X = op.X
+rz = op.rz
+swap = op.swap
+```
 
 ## Documents
 https://qupy.readthedocs.io/en/latest/ (In preparation. Your contribution is welcome!)
@@ -32,8 +56,9 @@ Your contribution is welcome!
 
 ```python
 >>> import numpy as np
->>> from qupy.qubit import Qubits
->>> from qupy.operator import H, X, rz, swap
+>>> from qupy import Qubits, Operator
+>>> op = Operator()
+>>> H, X, rz, swap = op.H, op.X, op.rz, op.swap
 
 >>> q = Qubits(3)
 >>> print(q.get_state())
@@ -104,6 +129,42 @@ Your contribution is welcome!
 [ 0.        +0.j          0.        +0.j          0.60597922-0.60597922j
   0.        +0.j          0.        +0.j          0.        +0.j
  -0.51534296+0.j          0.        +0.j        ]
+
+>>> hamiltonian = {'XXI': 1, 'IIZ': -0.5}
+>>> print(q.expect(hamiltonian))
+-0.4999999999999999
+>>> ham = np.kron(np.kron(X, X), X)
+>>> print(q.expect(ham))
+0.0
+```
+
+## Example (GPU)
+
+Read the [CuPy documentation](https://docs-cupy.chainer.org/en/stable/) for using CuPy.
+
+```python
+>>> import cupy as cp
+>>> cp.cuda.Device(0).use()
+>>> from qupy import Qubits, Operator
+
+>>> op = Operator(xp=cp)
+>>> H, X = op.H, op.X
+
+>>> q = Qubits(3, xp=cp)
+>>> q.gate(H, target=0)
+>>> q.gate(H, target=1)
+>>> q.gate(H, target=2)
+>>> print(q.get_state())
+[0.35355339+0.j 0.35355339+0.j 0.35355339+0.j 0.35355339+0.j
+ 0.35355339+0.j 0.35355339+0.j 0.35355339+0.j 0.35355339+0.j]
+
+>>> ham = {'XXI': 1, 'IIZ': -0.5}
+>>> print(q.expect(ham))
+0.9999999999999996
+
+>>> ham = cp.kron(cp.kron(X, X), X)
+>>> print(q.expect(ham))
+0.9999999999999996
 ```
 
 ## Citation

@@ -1,14 +1,13 @@
-# -*- coding: utf-8 -*-
 from __future__ import division
-from __future__ import print_function
 import numpy as np
 import math
-import sys
-import qupy.operator
-try:
-    import cupy
-except:
-    pass
+import qupy
+
+
+def _to_tuple(x):
+    if np.issubdtype(type(x), np.integer):
+        x = (x,)
+    return x
 
 
 class Qubits:
@@ -32,18 +31,15 @@ class Qubits:
             Data type of the data array.
     """
 
-    def __init__(self, size, dtype=np.complex128, gpu=-1):
-        if gpu >= 0:
-            self.xp = cupy
-            self.xp.cuda.Device(gpu).use()
-        else:
-            self.xp = np
+    def __init__(self, size, dtype=np.complex128, xp=np, **kargs):
 
+        self.xp = xp
         self.size = size
         self.dtype = dtype
+        self.basic_operator = qupy.Operator(xp=self.xp, dtype=dtype)
 
-        self.data = self.xp.zeros([2] * self.size, dtype=dtype)
-        self.data[tuple([0] * self.size)] = 1
+        self.state = self.xp.zeros([2] * self.size, dtype=dtype)
+        self.state[tuple([0] * self.size)] = 1
 
     def set_state(self, state):
         """set_state(self, state)
@@ -52,19 +48,20 @@ class Qubits:
 
         Args:
             state (:class:`str` or :class:`list` or :class:`numpy.ndarray` or :class:`cupy.ndarray`):
-                If you set state as :class:`str`, you can set state \state>
-                (e.g. state='0110' -> \0110>.)
+                If you set state as :class:`str`, you can set state \\state>
+                (e.g. state='0110' -> \\0110>.)
                 otherwise, qubit state is set that you entered as state.
         """
         if isinstance(state, str):
-            assert len(state) == self.data.ndim, 'There were {} qubits prepared, but you specified {} qubits'.format(
-                self.data.ndim, len(state))
-            self.data = self.xp.zeros_like(self.data)
-            self.data[tuple([int(i) for i in state])] = 1
+            if len(state) != self.state.ndim:
+                raise ValueError('There were {} qubits prepared, but you specified {} qubits.'
+                                 .format(self.state.ndim, len(state)))
+            self.state = self.xp.zeros_like(self.state)
+            self.state[tuple([int(i) for i in state])] = 1
         else:
-            self.data = self.xp.asarray(state, dtype=self.dtype)
-            if self.data.ndim == 1:
-                self.data = self.data.reshape([2] * self.size)
+            self.state = self.xp.asarray(state, dtype=self.dtype)
+            if self.state.ndim == 1:
+                self.state = self.state.reshape([2] * self.size)
 
     def get_state(self, flatten=True):
         """get_state(self, flatten=True)
@@ -77,8 +74,8 @@ class Qubits:
                 otherwise, you get state reformated to 1D-array.
         """
         if flatten:
-            return self.data.flatten()
-        return self.data
+            return self.state.flatten()
+        return self.state
 
     def gate(self, operator, target, control=None, control_0=None):
         """gate(self, operator, target, control=None, control_0=None)
@@ -97,18 +94,17 @@ class Qubits:
         """
         xp = self.xp
 
-        if np.issubdtype(type(target), np.integer):
-            target = (target,)
-        if np.issubdtype(type(control), np.integer):
-            control = (control,)
-        if np.issubdtype(type(control_0), np.integer):
-            control_0 = (control_0,)
+        target = _to_tuple(target)
+        control = _to_tuple(control)
+        control_0 = _to_tuple(control_0)
 
         operator = xp.asarray(operator, dtype=self.dtype)
+
+        if operator.size != 2 ** (len(target) * 2):
+            raise ValueError('You must set operator.size==2^(len(target)*2)')
+
         if operator.shape[0] != 2:
             operator = operator.reshape([2] * int(math.log2(operator.size)))
-
-        assert operator.ndim == len(target) * 2, 'You must set operator.size==exp(len(target)*2)'
 
         c_slice = [slice(None)] * self.size
         if control is not None:
@@ -119,22 +115,18 @@ class Qubits:
                 c_slice[_c] = slice(0, 1)
         c_slice = tuple(c_slice)
 
-        c_index = list(range(self.size))
-        t_index = list(range(self.size))
+        c_idx = list(range(self.size))
+        t_idx = list(range(self.size))
         for i, _t in enumerate(target):
-            t_index[_t] = self.size + i
-        o_index = list(range(self.size, self.size + len(target))) + list(target)
+            t_idx[_t] = self.size + i
+        o_idx = list(range(self.size, self.size + len(target))) + list(target)
 
-        # Use following code when numpy bug is removed and cupy can use this einsum format.
-        # self.data[c_slice] = xp.einsum(operator, o_index, self.data[c_slice], c_index, t_index)
-
-        # Alternative code
         character = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
-        o_index = ''.join([character[i] for i in o_index])
-        c_index = ''.join([character[i] for i in c_index])
-        t_index = ''.join([character[i] for i in t_index])
+        o_index = ''.join([character[i] for i in o_idx])
+        c_index = ''.join([character[i] for i in c_idx])
+        t_index = ''.join([character[i] for i in t_idx])
         subscripts = '{},{}->{}'.format(o_index, c_index, t_index)
-        self.data[c_slice] = xp.einsum(subscripts, operator, self.data[c_slice])
+        self.state[c_slice] = xp.einsum(subscripts, operator, self.state[c_slice])
 
     def project(self, target):
         """projection(self, target)
@@ -150,18 +142,14 @@ class Qubits:
         """
         xp = self.xp
 
-        self.data = xp.asarray(self.data, dtype=self.dtype)
-        if self.data.ndim == 1:
-            self.data = self.data.reshape([2] * self.size)
-
-        data = xp.split(self.data, [1], axis=target)
-        p = [self._to_scalar(xp.sum(data[i] * xp.conj(data[i])).real) for i in (0, 1)]
+        state = xp.split(self.state, [1], axis=target)
+        p = [self._to_scalar(xp.sum(state[i] * xp.conj(state[i])).real) for i in (0, 1)]
         obs = np.random.choice([0, 1], p=p)
 
         if obs == 0:
-            self.data = xp.concatenate((data[obs] / math.sqrt(p[obs]), xp.zeros_like(data[obs])), target)
+            self.state = xp.concatenate((state[obs] / math.sqrt(p[obs]), xp.zeros_like(state[obs])), target)
         else:
-            self.data = xp.concatenate((xp.zeros_like(data[obs]), data[obs] / math.sqrt(p[obs])), target)
+            self.state = xp.concatenate((xp.zeros_like(state[obs]), state[obs] / math.sqrt(p[obs])), target)
         return obs
 
     def expect(self, observable, n_trial=-1, flip_rate=0):
@@ -173,13 +161,13 @@ class Qubits:
             observable (:class:`dict` or :class:`numpy.ndarray` or :class:`cupy.ndarray`):
                 Physical quantity operator.
                 If you input :class:`numpy.ndarray` or :class:`cupy.ndarray` as observable,
-                this method returns :math:`\langle \psi | \mathrm{observable} | \psi>`,
-                where :math:`\psi>` is the states of qubits.
+                this method returns :math:`\\langle \\psi | \\mathrm{observable} | \\psi>`,
+                where :math:`\\psi>` is the states of qubits.
                 If you use :class:`dict` input, you have to set
                 {'operator1': coef1, 'operator2': coef2, 'operator3': coef3, ...},
                 such as {'XIX': 0.32, 'YYZ': 0.11, 'III': 0.02}.
                 If you input :class:`dict` as observable,
-                this method returns :math:`\sum_i coef_i \langle \psi | \mathrm{operator}_i | \psi>`.
+                this method returns :math:`\\sum_i coef_i \\langle \\psi | \\mathrm{operator}_i | \\psi>`.
 
         Returns:
             :class:`float`: Expected value.
@@ -187,23 +175,24 @@ class Qubits:
         xp = self.xp
 
         if isinstance(observable, dict):
-            assert (flip_rate >= 0) and (flip_rate <= 1),\
-                'You should set 0 <= flip_rate <= 1. Actual: {}'.format(flip_rate)
+            if (flip_rate < 0) or (flip_rate > 1):
+                raise ValueError('You should set 0 <= flip_rate <= 1. Actual: {}.'.format(flip_rate))
+
             ret = 0
-            org_data = self.data
+            org_state = self.state
 
             for key, value in observable.items():
-                self.data = xp.copy(org_data)
-                assert len(key) == self.size, \
-                    'Length of each key must be {} ,but len({}) is {}.'.format(self.size, key, len(key))
+                self.state = xp.copy(org_state)
+                if len(key) != self.size:
+                    raise ValueError('Each key length must be {}, but len({}) is {}.'.format(self.size, key, len(key)))
 
                 for i, op in enumerate(key):
                     if op in 'XYZ':
-                        self.gate(getattr(qupy.operator, op), target=i)
-                    else:
-                        assert op == 'I', 'Keys of input must not include {}.'.format(op)
+                        self.gate(getattr(self.basic_operator, op), target=i)
+                    elif op != 'I':
+                        raise ValueError('Keys of input must not include {}.'.format(op))
 
-                e_val = xp.einsum('i,i', xp.conj(org_data.flatten()), self.data.flatten())
+                e_val = xp.dot(xp.conj(org_state.flatten()), self.state.flatten())  # i,i
                 e_val = self._to_scalar(xp.real(e_val))
 
                 if flip_rate > 0:
@@ -216,24 +205,26 @@ class Qubits:
 
                 ret += e_val * value
 
-            self.data = org_data
+            self.state = org_state
             return ret
 
         else:
-            assert flip_rate == 0,\
-                'Sorry, flip_rate does not supported in the case that type of observable is xp.array.'
-            assert observable.size == self.data.size ** 2, \
-                'operator.size must be {}. Actual: {}'.format(self.data.size ** 2, observable.size)
+            if flip_rate != 0:
+                raise ValueError('Sorry, flip_rate is supported only in the case that observable type is dictionary.')
+
+            if observable.size != self.state.size * self.state.size:
+                raise ValueError('operator.size must be {}. Actual: {}'.format(self.state.size ** 2, observable.size))
+
             observable = xp.asarray(observable, dtype=self.dtype)
-            if observable.shape[0] != self.data.size:
-                observable = observable.reshape((self.data.size, self.data.size))
+            if observable.shape[0] != self.state.size:
+                observable = observable.reshape((self.state.size, self.state.size))
 
             if n_trial <= 0:
-                ret = xp.einsum('i,ij,j', xp.conj(self.data.flatten()), observable, self.data.flatten())
+                ret = xp.dot(xp.conj(self.state.flatten()), xp.dot(observable, self.state.flatten()))  # i,ij,j
                 return self._to_scalar(xp.real(ret))
             else:
                 w, v = xp.linalg.eigh(observable)
-                dot = xp.einsum('ij,i->j', v, self.data.flatten())
+                dot = xp.dot(self.state.flatten(), v)  # i,ij->j
                 probability = xp.real(xp.conj(dot) * dot)
                 distribution = xp.random.multinomial(n_trial, probability, size=1)
                 ret = xp.sum(w * distribution) / n_trial
@@ -241,12 +232,8 @@ class Qubits:
 
     def _to_scalar(self, x):
         if self.xp != np:
-            if isinstance(x, cupy.ndarray):
-                x = cupy.asnumpy(x)
+            if isinstance(x, self.xp.ndarray):
+                x = self.xp.asnumpy(x)
         if isinstance(x, np.ndarray):
-            x = np.asscalar(x)
+            x = x.item(0)
         return x
-
-    def projection(self, target):
-        sys.stderr.write('`qubit.projection` method is abolished soon. Please use `qubit.project`.\n')
-        return self.project(target)

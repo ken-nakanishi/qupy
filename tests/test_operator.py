@@ -1,15 +1,36 @@
-# -*- coding: utf-8 -*-
 from __future__ import division
-from __future__ import print_function
+import pytest
 import numpy as np
 import math
 import cmath
-import pytest
-from qupy.operator import *
+from qupy import Operator
 
+op = Operator()
+I = op.I
+X = op.X
+Y = op.Y
+Z = op.Z
+H = op.H
+S = op.S
+T = op.T
+Sdag = op.Sdag
+Tdag = op.Tdag
+sqrt_not = op.sqrt_not
+swap = op.swap
+sqrt_swap = op.sqrt_swap
+sqrt_X = op.sqrt_X
+sqrt_Z = op.sqrt_Z
+sqrt_Zdag = op.sqrt_Zdag
+rx = op.rx
+ry = op.ry
+rz = op.rz
+phase_shift = op.phase_shift
+qft = op.qft
+iqft = op.iqft
 
 ket0 = np.array([1, 0]).reshape((2, 1))
 ket1 = np.array([0, 1]).reshape((2, 1))
+
 
 def dot(*args):
     args = list(args)
@@ -240,3 +261,16 @@ def test_sqrt_swap():
     )
     assert np.allclose(np.dot(sqrt_swap.reshape(4, 4), sqrt_swap.reshape(4, 4)), swap.reshape(4, 4))
 
+
+def test_qft():
+    assert np.allclose(qft(2), np.array([
+        [1, 1, 1, 1],
+        [1, 1j, -1, -1j],
+        [1, -1, 1, -1],
+        [1, -1j, -1, 1j]
+    ]) / 2)
+
+
+def test_iqft():
+    assert np.allclose(iqft(2), np.conj(qft(2)))
+    assert np.allclose(iqft(3), np.conj(qft(3)))
