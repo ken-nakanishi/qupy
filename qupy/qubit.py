@@ -1,12 +1,33 @@
 from __future__ import division
 import numpy as np
+import os
 import math
 import qupy
+
+dtype = getattr(np, os.environ.get('QUPY_DTYPE', 'complex128'))
+device = os.environ.get('QUPY_GPU', -1)
+
+
+if device >= 0:
+    import cupy
+    cupy.cuda.Device(device).use()
+    xp = cupy
+else:
+    xp = np
 
 
 def _to_tuple(x):
     if np.issubdtype(type(x), np.integer):
         x = (x,)
+    return x
+
+
+def _to_scalar(x):
+    if xp != np:
+        if isinstance(x, xp.ndarray):
+            x = xp.asnumpy(x)
+    if isinstance(x, np.ndarray):
+        x = x.item(0)
     return x
 
 
@@ -31,14 +52,12 @@ class Qubits:
             Data type of the data array.
     """
 
-    def __init__(self, size, dtype=np.complex128, xp=np, **kargs):
+    def __init__(self, size, **kargs):
 
-        self.xp = xp
         self.size = size
-        self.dtype = dtype
-        self.basic_operator = qupy.Operator(xp=self.xp, dtype=dtype)
+        self.basic_operator = qupy.operator
 
-        self.state = self.xp.zeros([2] * self.size, dtype=dtype)
+        self.state = xp.zeros([2] * self.size, dtype=dtype)
         self.state[tuple([0] * self.size)] = 1
 
     def set_state(self, state):
@@ -56,10 +75,10 @@ class Qubits:
             if len(state) != self.state.ndim:
                 raise ValueError('There were {} qubits prepared, but you specified {} qubits.'
                                  .format(self.state.ndim, len(state)))
-            self.state = self.xp.zeros_like(self.state)
+            self.state = xp.zeros_like(self.state)
             self.state[tuple([int(i) for i in state])] = 1
         else:
-            self.state = self.xp.asarray(state, dtype=self.dtype)
+            self.state = xp.asarray(state, dtype=dtype)
             if self.state.ndim == 1:
                 self.state = self.state.reshape([2] * self.size)
 
@@ -92,13 +111,12 @@ class Qubits:
             control_0 (None or :class:`int` or :class:`tuple` of :class:`int`):
                 Operate target qubits where all control qubits are 0
         """
-        xp = self.xp
 
         target = _to_tuple(target)
         control = _to_tuple(control)
         control_0 = _to_tuple(control_0)
 
-        operator = xp.asarray(operator, dtype=self.dtype)
+        operator = xp.asarray(operator, dtype=dtype)
 
         if operator.size != 2 ** (len(target) * 2):
             raise ValueError('You must set operator.size==2^(len(target)*2)')
@@ -140,10 +158,9 @@ class Qubits:
         Returns:
             :class:`int`: O or 1.
         """
-        xp = self.xp
 
         state = xp.split(self.state, [1], axis=target)
-        p = [self._to_scalar(xp.sum(state[i] * xp.conj(state[i])).real) for i in (0, 1)]
+        p = [_to_scalar(xp.sum(state[i] * xp.conj(state[i])).real) for i in (0, 1)]
         obs = np.random.choice([0, 1], p=p)
 
         if obs == 0:
@@ -168,11 +185,12 @@ class Qubits:
                 such as {'XIX': 0.32, 'YYZ': 0.11, 'III': 0.02}.
                 If you input :class:`dict` as observable,
                 this method returns :math:`\\sum_i coef_i \\langle \\psi | \\mathrm{operator}_i | \\psi>`.
+            n_trial (:class: int):
+                cumulative number.
 
         Returns:
             :class:`float`: Expected value.
         """
-        xp = self.xp
 
         if isinstance(observable, dict):
             if (flip_rate < 0) or (flip_rate > 1):
@@ -193,7 +211,7 @@ class Qubits:
                         raise ValueError('Keys of input must not include {}.'.format(op))
 
                 e_val = xp.dot(xp.conj(org_state.flatten()), self.state.flatten())  # i,i
-                e_val = self._to_scalar(xp.real(e_val))
+                e_val = _to_scalar(xp.real(e_val))
 
                 if flip_rate > 0:
                     e_val = e_val * (1 - 2 * flip_rate)
@@ -215,25 +233,17 @@ class Qubits:
             if observable.size != self.state.size * self.state.size:
                 raise ValueError('operator.size must be {}. Actual: {}'.format(self.state.size ** 2, observable.size))
 
-            observable = xp.asarray(observable, dtype=self.dtype)
+            observable = xp.asarray(observable, dtype=dtype)
             if observable.shape[0] != self.state.size:
                 observable = observable.reshape((self.state.size, self.state.size))
 
             if n_trial <= 0:
                 ret = xp.dot(xp.conj(self.state.flatten()), xp.dot(observable, self.state.flatten()))  # i,ij,j
-                return self._to_scalar(xp.real(ret))
+                return _to_scalar(xp.real(ret))
             else:
                 w, v = xp.linalg.eigh(observable)
                 dot = xp.dot(self.state.flatten(), v)  # i,ij->j
                 probability = xp.real(xp.conj(dot) * dot)
                 distribution = xp.random.multinomial(n_trial, probability, size=1)
                 ret = xp.sum(w * distribution) / n_trial
-                return self._to_scalar(xp.real(ret))
-
-    def _to_scalar(self, x):
-        if self.xp != np:
-            if isinstance(x, self.xp.ndarray):
-                x = self.xp.asnumpy(x)
-        if isinstance(x, np.ndarray):
-            x = x.item(0)
-        return x
+                return _to_scalar(xp.real(ret))

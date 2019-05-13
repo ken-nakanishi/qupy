@@ -1,15 +1,8 @@
 from __future__ import division
 import pytest
 import numpy as np
-from qupy import Qubits, Operator
-
-op = Operator()
-I = op.I
-X = op.X
-Y = op.Y
-swap = op.swap
-ry = op.ry
-rz = op.rz
+from qupy import Qubits
+from qupy.operator import I, X, Y, ry, rz, swap
 
 
 def test_init():
