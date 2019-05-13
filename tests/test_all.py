@@ -1,12 +1,8 @@
 from __future__ import division
 import pytest
 import numpy as np
-from qupy import Qubits, Operator
-
-op = Operator()
-X = op.X
-rx = op.rx
-swap = op.swap
+from qupy import Qubits
+from qupy.operator import X, rx, swap
 
 
 # famous formula
