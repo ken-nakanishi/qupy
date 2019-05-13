@@ -4,7 +4,7 @@ import os
 import math
 import cmath
 
-dtype = os.environ.get('QUPY_DTYPE', np.complex128)
+dtype = getattr(np, os.environ.get('QUPY_DTYPE', 'complex128'))
 device = os.environ.get('QUPY_GPU', -1)
 
 if device >= 0:
