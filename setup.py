@@ -10,12 +10,12 @@ with open('LICENSE') as f:
 
 setup(
     name='qupy',
-    version='0.3.0b1',
+    version='1.0.0',
     description='QuPy: A quantum circuit simulator for both CPU and GPU',
     long_description=readme,
     author='Ken Nakanishi',
     author_email='ikyhn1.ken.n@gmail.com',
-    install_requires=['numpy', 'opt-einsum'],
+    install_requires=['numpy'],
     url='https://github.com/ken-nakanishi/qupy',
     license=license,
     packages=find_packages(exclude=('tests', 'docs')),

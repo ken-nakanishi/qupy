@@ -1,14 +1,36 @@
 from __future__ import division
+import pytest
 import numpy as np
 import math
 import cmath
-import pytest
-from qupy.operator import I, X, Y, Z, H, S, T, Sdag, Tdag, sqrt_not, \
-    rx, ry, rz, phase_shift, swap, sqrt_swap, qft, iqft
+from qupy import Operator
 
+op = Operator()
+I = op.I
+X = op.X
+Y = op.Y
+Z = op.Z
+H = op.H
+S = op.S
+T = op.T
+Sdag = op.Sdag
+Tdag = op.Tdag
+sqrt_not = op.sqrt_not
+swap = op.swap
+sqrt_swap = op.sqrt_swap
+sqrt_X = op.sqrt_X
+sqrt_Z = op.sqrt_Z
+sqrt_Zdag = op.sqrt_Zdag
+rx = op.rx
+ry = op.ry
+rz = op.rz
+phase_shift = op.phase_shift
+qft = op.qft
+iqft = op.iqft
 
 ket0 = np.array([1, 0]).reshape((2, 1))
 ket1 = np.array([0, 1]).reshape((2, 1))
+
 
 def dot(*args):
     args = list(args)

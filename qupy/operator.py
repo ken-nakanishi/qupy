@@ -67,28 +67,3 @@ class Operator:
         dim = 2 ** n
         v = self.xp.arange(dim)
         return np.exp(-2j * np.pi * self.xp.einsum('i,j->ij', v, v) / dim) / math.sqrt(dim)
-
-
-op = Operator()
-
-I = op.I
-X = op.X
-Y = op.Y
-Z = op.Z
-H = op.H
-S = op.S
-T = op.T
-Sdag = op.Sdag
-Tdag = op.Tdag
-sqrt_not = op.sqrt_not
-swap = op.swap
-sqrt_swap = op.sqrt_swap
-sqrt_X = op.sqrt_X
-sqrt_Z = op.sqrt_Z
-sqrt_Zdag = op.sqrt_Zdag
-rx = op.rx
-ry = op.ry
-rz = op.rz
-phase_shift = op.phase_shift
-qft = op.qft
-iqft = op.iqft

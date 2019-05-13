@@ -1,9 +1,7 @@
 from __future__ import division
 import numpy as np
 import math
-import opt_einsum as oe
 import qupy
-import importlib
 
 
 def _to_tuple(x):
@@ -33,20 +31,11 @@ class Qubits:
             Data type of the data array.
     """
 
-    def __init__(self, size, dtype=np.complex128, backend='numpy', **kargs):
+    def __init__(self, size, dtype=np.complex128, xp=np, **kargs):
 
-        if backend == 'cupy':
-            gpu = kargs.get('gpu', 0)
-            self.xp = importlib.import_module('cupy')
-            self.xp.cuda.Device(gpu).use()
-        elif backend == 'numpy':
-            self.xp = np
-        else:
-            raise ValueError('Only numpy and cupy can use as backend.')
-
+        self.xp = xp
         self.size = size
         self.dtype = dtype
-        self.backend = backend
         self.basic_operator = qupy.Operator(xp=self.xp, dtype=dtype)
 
         self.state = self.xp.zeros([2] * self.size, dtype=dtype)
@@ -132,7 +121,12 @@ class Qubits:
             t_idx[_t] = self.size + i
         o_idx = list(range(self.size, self.size + len(target))) + list(target)
 
-        self.state[c_slice] = oe.contract(operator, o_idx, self.state[c_slice], c_idx, t_idx, backend=self.backend)
+        character = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
+        o_index = ''.join([character[i] for i in o_idx])
+        c_index = ''.join([character[i] for i in c_idx])
+        t_index = ''.join([character[i] for i in t_idx])
+        subscripts = '{},{}->{}'.format(o_index, c_index, t_index)
+        self.state[c_slice] = xp.einsum(subscripts, operator, self.state[c_slice])
 
     def project(self, target):
         """projection(self, target)
@@ -237,9 +231,9 @@ class Qubits:
                 return self._to_scalar(xp.real(ret))
 
     def _to_scalar(self, x):
-        if self.backend == 'cupy':
+        if self.xp != np:
             if isinstance(x, self.xp.ndarray):
                 x = self.xp.asnumpy(x)
         if isinstance(x, np.ndarray):
-            x = np.asscalar(x)
+            x = x.item(0)
         return x
