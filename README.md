@@ -125,8 +125,8 @@ Your contribution is welcome!
 >>> hamiltonian = {'XXI': 1, 'IIZ': -0.5}
 >>> print(q.expect(hamiltonian))
 -0.4999999999999999
->>> ham = np.kron(np.kron(X, X), X)
->>> print(q.expect(ham))
+>>> hamiltonian = np.kron(np.kron(X, X), X)
+>>> print(q.expect(hamiltonian))
 0.0
 ```
 
