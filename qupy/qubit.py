@@ -5,7 +5,7 @@ import math
 import qupy
 
 dtype = getattr(np, os.environ.get('QUPY_DTYPE', 'complex128'))
-device = os.environ.get('QUPY_GPU', -1)
+device = int(os.environ.get('QUPY_GPU', -1))
 
 
 if device >= 0:
