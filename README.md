@@ -35,7 +35,8 @@ If you use a GPU, set the following environment variables.
     - If you does not set QUPY_DTYPE, Data type is set `complex128`.
 - QUPY_GPU (integer)
     - GPU machine number.
-    - Set QUPY_GPU only if you use GPU.
+    - Set QUPY_GPU if you use GPU.
+    - If you don't set QUPY_GPU or you set QUPY_GPU=-1, your program will be running on the CPU.
 
 Read the [CuPy documentation](https://docs-cupy.chainer.org/en/stable/) for using CuPy.
 
