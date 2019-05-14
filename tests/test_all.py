@@ -1,8 +1,25 @@
 from __future__ import division
 import pytest
+import os
 import numpy as np
 from qupy import Qubits
 from qupy.operator import X, rx, swap
+
+dtype = getattr(np, os.environ.get('QUPY_DTYPE', 'complex128'))
+device = int(os.environ.get('QUPY_GPU', -1))
+
+if device >= 0:
+    import cupy
+    cupy.cuda.Device(device).use()
+    xp = cupy
+else:
+    xp = np
+
+
+def _allclose(x0, x1):
+    if device >= 0:
+        return np.allclose(xp.asnumpy(x0), xp.asnumpy(x1))
+    return np.allclose(x0, x1)
 
 
 # famous formula
@@ -21,4 +38,4 @@ def test_swap_is_3cnot():
     q.gate(X, target=0, control=1)
     psi2 = q.state
 
-    assert np.allclose(psi1, psi2)
+    assert _allclose(psi1, psi2)
