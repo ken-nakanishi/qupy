@@ -44,7 +44,7 @@ If you use a GPU, set the following environment variables.
 Read the [CuPy documentation](https://docs-cupy.chainer.org/en/stable/) for using CuPy.
 
 ## Documents
-https://qupy.readthedocs.io/en/latest/
+https://qupy.readthedocs.io/en/latest/qupy.html
 
 ## Development
 Your contribution is welcome!
