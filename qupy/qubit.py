@@ -67,8 +67,8 @@ class Qubits:
 
         Args:
             state (:class:`str` or :class:`list` or :class:`numpy.ndarray` or :class:`cupy.ndarray`):
-                If you set state as :class:`str`, you can set state :math:`\|state>`
-                (e.g. state='0110' -> :math:`|0110 \\rangle`.)
+                If you set state as :class:`str`, you can set state :math:`|state\\rangle`
+                (e.g. state='0110' -> :math:`|0110\\rangle`.)
                 otherwise, qubit state is set that you entered as state.
         """
         if isinstance(state, str):
