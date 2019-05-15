@@ -1,6 +1,9 @@
 # QuPy
 
 [![Build Status](https://travis-ci.org/ken-nakanishi/qupy.svg?branch=master)](https://travis-ci.org/ken-nakanishi/qupy)
+[![Downloads](https://pepy.tech/badge/qupy)](https://pepy.tech/project/qupy)
+[![Downloads](https://pepy.tech/badge/qupy/month)](https://pepy.tech/project/qupy/month)
+[![Downloads](https://pepy.tech/badge/qupy/week)](https://pepy.tech/project/qupy/week)
 
 QuPy is a quantum circuit simulator for both CPU and GPU.
 
