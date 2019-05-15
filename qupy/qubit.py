@@ -67,7 +67,7 @@ class Qubits:
 
         Args:
             state (:class:`str` or :class:`list` or :class:`numpy.ndarray` or :class:`cupy.ndarray`):
-                If you set state as :class:`str`, you can set state :math:`|state\\rangle`
+                If you set state as :class:`str`, you can set state :math:`|\\mathrm{state}\\rangle`
                 (e.g. state='0110' -> :math:`|0110\\rangle`.)
                 otherwise, qubit state is set that you entered as state.
         """
@@ -179,13 +179,13 @@ class Qubits:
                 Physical quantity operator.
                 If you input :class:`numpy.ndarray` or :class:`cupy.ndarray` as observable,
                 this method returns :math:`\\langle \\psi | \\mathrm{observable} | \\psi \\rangle`,
-                where :math:` | \\psi \\rangle` is the states of qubits.
+                where :math:`| \\psi \\rangle` is the states of qubits.
                 If you use :class:`dict` input, you have to set
                 {'operator1': coef1, 'operator2': coef2, 'operator3': coef3, ...},
                 such as {'XIX': 0.32, 'YYZ': 0.11, 'III': 0.02}.
                 If you input :class:`dict` as observable,
                 this method returns
-                :math:`\\sum_i \\mathrm{coef}_i \\langle \\psi | \\mathrm{operator}_i | \\psi \\rangle`.
+                :math:`\\sum_i \\mathrm{coef}i \\langle \\psi | \\mathrm{operator}i | \\psi \\rangle`.
             n_trial (:class: int):
                 cumulative number.
 
