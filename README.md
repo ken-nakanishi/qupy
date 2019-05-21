@@ -30,7 +30,7 @@ conda install conda-forge::qupy
 ```
 
 ## GPU
-If you use a GPU, set the following environment variables.
+If you use a GPU, install `cupy` and set the following environment variables.
 
 - QUPY_DTYPE
     - Data type of the data array.
