@@ -36,8 +36,8 @@ If you use a GPU, install `cupy` and set the following environment variables.
     - Data type of the data array.
     - `complex64` or `complex128` or `complex256`
     - If you does not set QUPY_DTYPE, Data type is set `complex128`.
-- QUPY_GPU (integer)
-    - GPU machine number.
+- QUPY_GPU
+    - GPU machine number (integer).
     - Set QUPY_GPU if you use GPU.
     - If you don't set QUPY_GPU or you set QUPY_GPU=-1, your program will be running on the CPU.
 
